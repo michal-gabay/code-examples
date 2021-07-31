@@ -10,10 +10,10 @@ https://www.npmjs.com/package/react-notifications-component
 ```
 - In the root component file:
     - Add those imports statments to the root component file: 
-    ```
-    import ReactNotification from 'react-notifications-component'
-    import 'react-notifications-component/dist/theme.css'
-    ```
+        ```
+        import ReactNotification from 'react-notifications-component'
+        import 'react-notifications-component/dist/theme.css'
+        ```
     - Render react-notifications-component at the top of your application so that it does not conflict with other absolutely positioned DOM elements:
     ```
     const App = () => {
