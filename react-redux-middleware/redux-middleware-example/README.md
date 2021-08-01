@@ -1,70 +1,66 @@
-# Getting Started with Create React App
+# Redux Middleware Example
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Overview
 
-## Available Scripts
+This is a simple counter example.
 
-In the project directory, you can run:
+state contains only count and it is represented in the ```Counter``` component. the component also have Decrement and Increment buttons that disatches Decrement and Increment actions.
 
-### `yarn start`
+## Middlewares
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+there are 4 middlewares in this example. they are added in the ```index.js``` file, in the creation of the store, using the redux ```applyMiddleware``` function:
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+```
+import { applyMiddleware, createStore } from 'redux';
 
-### `yarn test`
+const store = createStore(
+  counterReducer, 
+  applyMiddleware(myLoggerMiddleware, secondMiddleware, capAt10Middleware, logger)
+)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```
 
-### `yarn build`
+The middlewares will run whenever an action is dispatch and they will run before the reducer. They will run in the order in which they appear in the ```applyMiddleware``` function.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Redux Middleware Structure:
+```
+export const middlewareNmae = store => next => action => {
+    // do somthing...
+    next(action)
+}
+```
+It is equal to:
+```
+export function middlewareNmae(store) {
+    return (next) => {
+        return (action) => {
+            // do somthing...
+            return next(action)
+        }
+    }
+}
+```
+It is a function that returns a function that returns a function that dispatch action to the reducer
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+The next function is the function that do the dispatch to the reducer.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+#### Importent note
+If we wont use the next function the action will not be dispatched to the reducer and therefor the reducer code will not run.
 
-### `yarn eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### The 4 middlewares in this project:
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+1. #### myLoggerMiddleware
+    A custom middleware that writes the type of the action that was dispathed to the console.log
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+2. #### secondMiddleware
+    A custom middleware that writes `secondMiddleware log :)` to the console.log
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+3. #### capAt10Middleware
+    A custom middleware that makes sure the count value will not higher then 10. If we will press the increment button when the value is 10, the middleware will dispetch an decrement action instead of increament
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+2. #### logger
+    An **external** middleware that writes action and state details to the console.log.
+    In order to use this middelware you need to:
+    - install the package: ```> npm install redux-logger```
+    - in the ```index.js``` file, if you wish to add this middleware you need to import it: ```import logger from 'redux-logger'``` and then add it to the ```applyMiddleware``` function

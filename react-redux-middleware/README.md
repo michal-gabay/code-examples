@@ -9,8 +9,6 @@ The examples in this section are based on this [youTube video](https://www.youtu
 The purpose of redux middleware is to intersap an action before it reaches the reducer.
 
 <img src="../Images/Redux-Middleware-diagram.png" width=800/>
-<br/>
-<br/>
 
 In the middleware we can:
 - perform extra logic
@@ -25,7 +23,6 @@ The only thing we can't do in middleware is change the state itself (since that 
 There can be more then one middlewares:
 
 <img src="../Images/Redux-Multiple-Middleware-diagram.png"  width=800/>
-<br/>
 <br/>
 
 ## Example 1: redux-middleware-example
