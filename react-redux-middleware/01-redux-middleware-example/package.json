@@ -1,5 +1,5 @@
 {
-  "name": "redux-middleware-example",
+  "name": "01-redux-middleware-example",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
