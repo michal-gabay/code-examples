@@ -26,4 +26,10 @@ There can be more then one middlewares:
 <br/>
 
 ## Example 1: redux-middleware-example
-A simple example of middleware usage
+A simple example of redux middleware usage
+
+## Example 2: thunk-example
+A simple example of redux thunk
+
+## Example 3: redux-loading-and-error-states
+An example of redux thunk using the Request, Success & Failure pattern
