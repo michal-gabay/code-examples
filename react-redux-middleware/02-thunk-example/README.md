@@ -1,70 +1,140 @@
-# Getting Started with Create React App
+# Thunk Example
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## the problem it comes to solve
 
-## Available Scripts
+In redux, an action creator is the function that we can put in the dispatch, that returns an action.
+If we wish to perform an async function in the action creator, we will encounter a problem since:
+1. Action creators can only return plain javascript objects with a type property
+2. 
 
-In the project directory, you can run:
+So, if we will try to fetch data from an API like in the following code:
 
-### `yarn start`
+```
+export const FETCH_TODOS = 'FETCH_TODOS'
+ 
+export const fetchTodos = async () => {
+    const response = await fetch('https://jsonplaceholder.typicode.com/todos')
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+    return {
+        type: FETCH_TODOS,
+        payload: response.data
+    }
+}
+```
+we will get the following error:
+<img src="../../Images/react-thunk-error-01.png" width=800/>
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+The reason is that allthough it looks like we are returning a simple object, the code we are writing is being converted to a plain javascript that all browsers can anderstand, by a tool call bubble. the translation to the oldest Javascript version looks somthing like this (I used https://babeljs.io/repl to translate the code above):
+```
+"use strict";
 
-### `yarn test`
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.fetchTodos = void 0;
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 
-### `yarn build`
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+var FETCH_TODOS = 'FETCH_TODOS';
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+var fetchTodos = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+    var response;
+    return regeneratorRuntime.wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            _context.next = 2;
+            return fetch('https://jsonplaceholder.typicode.com/todos');
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+          case 2:
+            response = _context.sent;
+            return _context.abrupt("return", {
+              type: FETCH_TODOS,
+              payload: response.data
+            });
 
-### `yarn eject`
+          case 4:
+          case "end":
+            return _context.stop();
+        }
+      }
+    }, _callee);
+  }));
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+  return function fetchTodos() {
+    return _ref.apply(this, arguments);
+  };
+}();
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+exports.fetchTodos = fetchTodos;
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+We can see that there is a switch case and the function returns an object only in case 2.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
 
-## Learn More
+And if we will remove the async await and return the promise as the payload of the action:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```
+export const fetchTodos = () => {
+    const promise = fetch('https://jsonplaceholder.typicode.com/todos')
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+    return {
+        type: FETCH_TODOS,
+        payload: promise
+    }
+}
+```
 
-### Code Splitting
+We won't get any error, but since the action will be sent to the reducer well before the promise will be resolved, we will not get the data in time for the reducer to apdate the store with it.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
 
-### Analyzing the Bundle Size
+## The solution --> redux-thunk
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Redux-thunk has **a redux-middleware** called **thunk** that what it does is allowing the action creators to return an object (with type property) OR return a function (instead of only an object)
 
-### Making a Progressive Web App
+### installation
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```> npm install redux-thunk```
 
-### Advanced Configuration
+### usage
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+we need to add it to the applyMiddleware function in the creation of the store:
 
-### Deployment
+```
+import thunk from 'redux-thunk';
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+const store = createStore(todosReducer, applyMiddleware(thunk))
+```
 
-### `yarn build` fails to minify
+and now the action creator can return an async function that will eventually dispatch the action:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```
+export const fetchTodos = () => {
+
+    return async (dispatch, getState) => {
+        const response = await fetch('https://jsonplaceholder.typicode.com/todos')
+        const data = await response.json()
+
+        dispatch({
+            type: FETCH_TODOS,
+            payload: data
+        })
+    }
+}
+```
+
+In shortened code:
+```
+export const fetchTodos = () => async (dispatch, getState) => {
+    const response = await fetch('https://jsonplaceholder.typicode.com/todos')
+    const data = await response.json()
+
+    dispatch({
+        type: FETCH_TODOS,
+        payload: data
+    })
+}
+```
